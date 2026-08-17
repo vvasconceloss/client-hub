@@ -1,6 +1,6 @@
 namespace ClientHub.Models.Entities
 {
-  public class ClientModel
+  public class Client
   {
     public int Id { get; set; }
     public required string Email { get; set; }
@@ -10,6 +10,7 @@ namespace ClientHub.Models.Entities
     public string? Address { get; set; }
 
     public int PostalCodeId { get; set; }
+    public PostalCode PostalCode { get; set; } = null!;
 
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
