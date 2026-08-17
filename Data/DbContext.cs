@@ -5,15 +5,21 @@ namespace ClientHub.Data
 {
   public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
   {
-    public DbSet<UserModel> Users { get; set; }
-    public DbSet<ClientModel> Clients { get; set; }
-    public DbSet<PostalCodeModel> PostalCodes { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<Client> Clients { get; set; }
+    public DbSet<PostalCode> PostalCodes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-      modelBuilder.Entity<UserModel>().ToTable("Users");
-      modelBuilder.Entity<ClientModel>().ToTable("Clients");
-      modelBuilder.Entity<PostalCodeModel>().ToTable("PostalCodes");
+      modelBuilder.Entity<User>().ToTable("Users");
+      modelBuilder.Entity<Client>().ToTable("Clients");
+      modelBuilder.Entity<PostalCode>().ToTable("PostalCodes");
+
+      modelBuilder.Entity<Client>()
+        .HasOne(c => c.PostalCode)
+        .WithMany(p => p.Clients)
+        .HasForeignKey(c => c.PostalCodeId)
+        .OnDelete(DeleteBehavior.Cascade);
     }
   }
 }
