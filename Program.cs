@@ -1,4 +1,12 @@
+using ClientHub.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
+
+string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection String 'DefaultConnection' not found.");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseMySQL(connectionString));
 
 builder.Services.AddControllersWithViews();
 
