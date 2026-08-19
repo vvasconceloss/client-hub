@@ -2,9 +2,9 @@ services:
   mysql:
     image: mysql:8.0
     environment:
-      MYSQL_DATABASE: taskflow
-      MYSQL_USER: taskflow
-      MYSQL_PASSWORD: taskflow
+      MYSQL_DATABASE: clienthub
+      MYSQL_USER: clienthub
+      MYSQL_PASSWORD: clienthub
       MYSQL_ROOT_PASSWORD: rootpassword
     ports:
       - "3307:3306"
