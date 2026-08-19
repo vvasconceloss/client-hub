@@ -6,7 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection String 'DefaultConnection' not found.");
 
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseMySQL(connectionString));
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+);
 
 builder.Services.AddControllersWithViews();
 
