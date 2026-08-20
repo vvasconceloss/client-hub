@@ -5,9 +5,9 @@ namespace ClientHub.Data
 {
   public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
   {
-    public DbSet<User> Users { get; set; }
-    public DbSet<Client> Clients { get; set; }
-    public DbSet<PostalCode> PostalCodes { get; set; }
+    required public DbSet<User> Users { get; set; }
+    required public DbSet<Client> Clients { get; set; }
+    required public DbSet<PostalCode> PostalCodes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -20,6 +20,16 @@ namespace ClientHub.Data
         .WithMany(p => p.Clients)
         .HasForeignKey(c => c.PostalCodeId)
         .OnDelete(DeleteBehavior.Cascade);
+
+      modelBuilder.Entity<Client>()
+        .HasOne(c => c.CreatedByUser)
+        .WithMany()
+        .HasForeignKey(c => c.CreatedByUserId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+      modelBuilder.Entity<PostalCode>().HasData(SeedData.PostalCodes);
+      modelBuilder.Entity<User>().HasData(SeedData.User);
+      modelBuilder.Entity<Client>().HasData(SeedData.Clients);
     }
   }
 }
