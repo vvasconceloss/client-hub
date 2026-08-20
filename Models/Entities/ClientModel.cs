@@ -12,6 +12,9 @@ namespace ClientHub.Models.Entities
     public int PostalCodeId { get; set; }
     public PostalCode PostalCode { get; set; } = null!;
 
+    public Guid CreatedByUserId { get; set; }
+    public User CreatedByUser { get; set; } = null!;
+
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
   }
