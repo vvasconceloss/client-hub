@@ -1,0 +1,30 @@
+@model ClientHub.Models.ViewModels.ClientDetailsViewModel
+
+@{
+    ViewData["Title"] = "Delete Client";
+}
+
+<h1>Delete Client</h1>
+
+<p class="text-danger">Are you sure you want to delete this client? This action cannot be undone.</p>
+
+<dl class="row">
+    <dt class="col-sm-3">Name</dt>
+    <dd class="col-sm-9">@Model.FullName</dd>
+
+    <dt class="col-sm-3">Email</dt>
+    <dd class="col-sm-9">@Model.Email</dd>
+
+    <dt class="col-sm-3">Phone</dt>
+    <dd class="col-sm-9">@Model.Phone</dd>
+
+    <dt class="col-sm-3">Postal Code</dt>
+    <dd class="col-sm-9">@Model.PostalCode - @Model.City</dd>
+</dl>
+
+<form asp-action="Delete" method="post">
+    <input type="submit" value="Delete" class="btn btn-danger" />
+    <a class="btn btn-secondary"
+       asp-controller="Clients"
+       asp-action="Index">Back to List</a>
+</form>
