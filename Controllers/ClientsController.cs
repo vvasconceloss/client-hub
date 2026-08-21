@@ -1,64 +1,59 @@
 using ClientHub.Data;
 using ClientHub.Models.Entities;
 using ClientHub.Models.ViewModels;
+using ClientHub.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 
 namespace ClientHub.Controllers
 {
   public class ClientsController : Controller
   {
-    private readonly ApplicationDbContext _db;
+    private readonly IClientService _clientService;
 
-    public ClientsController(ApplicationDbContext db)
+    public ClientsController(IClientService clientService)
     {
-      _db = db;
+      _clientService = clientService;
     }
 
     public async Task<IActionResult> Index()
     {
-      var clients = await _db.Clients
-        .Include(c => c.PostalCode)
-        .OrderBy(c => c.LastName)
-        .ThenBy(c => c.FirstName)
-        .Select(c => new ClientListItemViewModel
-        {
-          Id = c.Id,
-          FullName = c.FirstName + " " + c.LastName,
-          Email = c.Email,
-          Phone = c.Phone,
-          PostalCode = c.PostalCode.Code
-        })
-        .ToListAsync();
+      var clients = await _clientService.GetAllAsync();
 
-      return View(clients);
+      var model = clients.Select(c => new ClientListItemViewModel
+      {
+        Id = c.Id,
+        FullName = c.FirstName + " " + c.LastName,
+        Email = c.Email,
+        Phone = c.Phone,
+        PostalCode = c.PostalCode.Code
+      }).ToList();
+
+      return View(model);
     }
 
     public async Task<IActionResult> Details(int id)
     {
-      var client = await _db.Clients
-        .Include(c => c.PostalCode)
-        .Where(c => c.Id == id)
-        .Select(c => new ClientDetailsViewModel
-        {
-          Id = c.Id,
-          FullName = c.FirstName + " " + c.LastName,
-          Email = c.Email,
-          Phone = c.Phone,
-          Address = c.Address,
-          PostalCode = c.PostalCode.Code,
-          City = c.PostalCode.City,
-          CreatedAt = c.CreatedAt
-        })
-        .FirstOrDefaultAsync();
+      var client = await _clientService.GetByIdAsync(id);
 
       if (client is null)
       {
         return NotFound();
       }
 
-      return View(client);
+      var model = new ClientDetailsViewModel
+      {
+        Id = client.Id,
+        FullName = client.FirstName + " " + client.LastName,
+        Email = client.Email,
+        Phone = client.Phone,
+        Address = client.Address,
+        PostalCode = client.PostalCode.Code,
+        City = client.PostalCode.City,
+        CreatedAt = client.CreatedAt
+      };
+
+      return View(model);
     }
 
     public async Task<IActionResult> Create()
@@ -91,15 +86,14 @@ namespace ClientHub.Controllers
         CreatedAt = DateTime.UtcNow
       };
 
-      _db.Clients.Add(client);
-      await _db.SaveChangesAsync();
+      await _clientService.CreateAsync(client);
 
       return RedirectToAction(nameof(Details), new { id = client.Id });
     }
 
     public async Task<IActionResult> Edit(int id)
     {
-      var client = await _db.Clients.FindAsync(id);
+      var client = await _clientService.GetByIdAsync(id);
 
       if (client is null)
       {
@@ -133,7 +127,7 @@ namespace ClientHub.Controllers
         return View(model);
       }
 
-      var client = await _db.Clients.FindAsync(id);
+      var client = await _clientService.GetByIdAsync(id);
 
       if (client is null)
       {
@@ -148,35 +142,33 @@ namespace ClientHub.Controllers
       client.PostalCodeId = model.PostalCodeId!.Value;
       client.UpdatedAt = DateTime.UtcNow;
 
-      await _db.SaveChangesAsync();
+      await _clientService.UpdateAsync(client);
 
       return RedirectToAction(nameof(Details), new { id = client.Id });
     }
 
     public async Task<IActionResult> Delete([FromRoute] int id)
     {
-      var client = await _db.Clients
-        .Include(c => c.PostalCode)
-        .Where(c => c.Id == id)
-        .Select(c => new ClientDetailsViewModel
-        {
-          Id = c.Id,
-          FullName = c.FirstName + " " + c.LastName,
-          Email = c.Email,
-          Phone = c.Phone,
-          Address = c.Address,
-          PostalCode = c.PostalCode.Code,
-          City = c.PostalCode.City,
-          CreatedAt = c.CreatedAt
-        })
-        .FirstOrDefaultAsync();
+      var client = await _clientService.GetByIdAsync(id);
 
       if (client is null)
       {
         return NotFound();
       }
 
-      return View(client);
+      var model = new ClientDetailsViewModel
+      {
+        Id = client.Id,
+        FullName = client.FirstName + " " + client.LastName,
+        Email = client.Email,
+        Phone = client.Phone,
+        Address = client.Address,
+        PostalCode = client.PostalCode.Code,
+        City = client.PostalCode.City,
+        CreatedAt = client.CreatedAt
+      };
+
+      return View(model);
     }
 
     [HttpPost]
@@ -184,29 +176,25 @@ namespace ClientHub.Controllers
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed([FromRoute] int id)
     {
-      var client = await _db.Clients.FindAsync(id);
-
-      if (client is null)
+      if (!await _clientService.DeleteAsync(id))
       {
         return NotFound();
       }
-
-      _db.Clients.Remove(client);
-      await _db.SaveChangesAsync();
 
       return RedirectToAction(nameof(Index));
     }
 
     private async Task<List<SelectListItem>> GetPostalCodeOptions()
     {
-      return await _db.PostalCodes
-        .OrderBy(p => p.City)
+      var postalCodes = await _clientService.GetAllPostalCodesAsync();
+
+      return postalCodes
         .Select(p => new SelectListItem
         {
           Value = p.Id.ToString(),
           Text = p.Code + " - " + p.City
         })
-        .ToListAsync();
+        .ToList();
     }
   }
 }
