@@ -1,6 +1,8 @@
 using ClientHub.Data;
+using ClientHub.Models.Entities;
 using ClientHub.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClientHub.Controllers
@@ -57,6 +59,57 @@ namespace ClientHub.Controllers
       }
 
       return View(client);
+    }
+
+    public async Task<IActionResult> Create()
+    {
+      var model = new CreateClientViewModel();
+      await PopulatePostalCodeOptions(model);
+
+      return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(CreateClientViewModel model)
+    {
+      if (!ModelState.IsValid)
+      {
+        await PopulatePostalCodeOptions(model);
+        return View(model);
+      }
+
+      var client = new Client
+      {
+        FirstName = model.FirstName,
+        LastName = model.LastName,
+        Email = model.Email,
+        Phone = model.Phone,
+        Address = model.Address,
+        PostalCodeId = model.PostalCodeId!.Value,
+        CreatedByUserId = SeedData.DemoUserId,
+        CreatedAt = DateTime.UtcNow
+      };
+
+      _db.Clients.Add(client);
+      await _db.SaveChangesAsync();
+
+      return RedirectToAction(nameof(Details), new { id = client.Id });
+    }
+
+    private async Task PopulatePostalCodeOptions(CreateClientViewModel model)
+    {
+      var postalCodes = await _db.PostalCodes
+        .OrderBy(p => p.City)
+        .ToListAsync();
+
+      model.PostalCodeOptions = postalCodes
+        .Select(p => new SelectListItem
+        {
+          Value = p.Id.ToString(),
+          Text = p.Code + " - " + p.City
+        })
+        .ToList();
     }
   }
 }
