@@ -64,7 +64,7 @@ namespace ClientHub.Controllers
     public async Task<IActionResult> Create()
     {
       var model = new CreateClientViewModel();
-      await PopulatePostalCodeOptions(model);
+      model.PostalCodeOptions = await GetPostalCodeOptions();
 
       return View(model);
     }
@@ -75,7 +75,7 @@ namespace ClientHub.Controllers
     {
       if (!ModelState.IsValid)
       {
-        await PopulatePostalCodeOptions(model);
+        model.PostalCodeOptions = await GetPostalCodeOptions();
         return View(model);
       }
 
@@ -97,19 +97,72 @@ namespace ClientHub.Controllers
       return RedirectToAction(nameof(Details), new { id = client.Id });
     }
 
-    private async Task PopulatePostalCodeOptions(CreateClientViewModel model)
+    public async Task<IActionResult> Edit(int id)
     {
-      var postalCodes = await _db.PostalCodes
-        .OrderBy(p => p.City)
-        .ToListAsync();
+      var client = await _db.Clients.FindAsync(id);
 
-      model.PostalCodeOptions = postalCodes
+      if (client is null)
+      {
+        return NotFound();
+      }
+
+      ViewData["ClientId"] = id;
+
+      var model = new EditClientViewModel
+      {
+        FirstName = client.FirstName,
+        LastName = client.LastName,
+        Email = client.Email,
+        Phone = client.Phone,
+        Address = client.Address,
+        PostalCodeId = client.PostalCodeId
+      };
+      model.PostalCodeOptions = await GetPostalCodeOptions();
+
+      return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit([FromRoute] int id, EditClientViewModel model)
+    {
+      if (!ModelState.IsValid)
+      {
+        ViewData["ClientId"] = id;
+        model.PostalCodeOptions = await GetPostalCodeOptions();
+        return View(model);
+      }
+
+      var client = await _db.Clients.FindAsync(id);
+
+      if (client is null)
+      {
+        return NotFound();
+      }
+
+      client.FirstName = model.FirstName;
+      client.LastName = model.LastName;
+      client.Email = model.Email;
+      client.Phone = model.Phone;
+      client.Address = model.Address;
+      client.PostalCodeId = model.PostalCodeId!.Value;
+      client.UpdatedAt = DateTime.UtcNow;
+
+      await _db.SaveChangesAsync();
+
+      return RedirectToAction(nameof(Details), new { id = client.Id });
+    }
+
+    private async Task<List<SelectListItem>> GetPostalCodeOptions()
+    {
+      return await _db.PostalCodes
+        .OrderBy(p => p.City)
         .Select(p => new SelectListItem
         {
           Value = p.Id.ToString(),
           Text = p.Code + " - " + p.City
         })
-        .ToList();
+        .ToListAsync();
     }
   }
 }
