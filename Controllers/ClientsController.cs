@@ -153,6 +153,50 @@ namespace ClientHub.Controllers
       return RedirectToAction(nameof(Details), new { id = client.Id });
     }
 
+    public async Task<IActionResult> Delete([FromRoute] int id)
+    {
+      var client = await _db.Clients
+        .Include(c => c.PostalCode)
+        .Where(c => c.Id == id)
+        .Select(c => new ClientDetailsViewModel
+        {
+          Id = c.Id,
+          FullName = c.FirstName + " " + c.LastName,
+          Email = c.Email,
+          Phone = c.Phone,
+          Address = c.Address,
+          PostalCode = c.PostalCode.Code,
+          City = c.PostalCode.City,
+          CreatedAt = c.CreatedAt
+        })
+        .FirstOrDefaultAsync();
+
+      if (client is null)
+      {
+        return NotFound();
+      }
+
+      return View(client);
+    }
+
+    [HttpPost]
+    [ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed([FromRoute] int id)
+    {
+      var client = await _db.Clients.FindAsync(id);
+
+      if (client is null)
+      {
+        return NotFound();
+      }
+
+      _db.Clients.Remove(client);
+      await _db.SaveChangesAsync();
+
+      return RedirectToAction(nameof(Index));
+    }
+
     private async Task<List<SelectListItem>> GetPostalCodeOptions()
     {
       return await _db.PostalCodes
