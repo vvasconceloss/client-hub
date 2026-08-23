@@ -14,11 +14,11 @@
 
 <form method="get" asp-controller="Clients" asp-action="Index">
     <div class="row g-2 mb-3">
-        <div class="col-auto">
+        <div class="col-12 col-md-auto">
             <input type="text" name="search" value="@Model.Search" class="form-control"
                    placeholder="Search by name or email..." />
         </div>
-        <div class="col-auto">
+        <div class="col-12 col-md-auto">
             <select name="postalCodeId" class="form-select">
                 <option value="">All postal codes</option>
                 @foreach (var postalCode in Model.PostalCodes)
@@ -30,7 +30,7 @@
                 }
             </select>
         </div>
-        <div class="col-auto">
+        <div class="col-12 col-md-auto">
             <select name="sortBy" class="form-select">
                 <option value="name"
                         selected="@(Model.SortBy is null or "name" ? "selected" : null)">Sort by Name</option>
@@ -40,7 +40,7 @@
                         selected="@(Model.SortBy == "createdAt" ? "selected" : null)">Sort by Created Date</option>
             </select>
         </div>
-        <div class="col-auto">
+        <div class="col-12 col-md-auto">
             <select name="sortDir" class="form-select">
                 <option value="asc"
                         selected="@(Model.SortDir != "desc" ? "selected" : null)">Ascending</option>
@@ -48,7 +48,7 @@
                         selected="@(Model.SortDir == "desc" ? "selected" : null)">Descending</option>
             </select>
         </div>
-        <div class="col-auto">
+        <div class="col-12 col-md-auto">
             <button type="submit" class="btn btn-outline-secondary">Apply</button>
             <a class="btn btn-link"
                asp-controller="Clients"
@@ -57,77 +57,90 @@
     </div>
 </form>
 
-<table class="table table-striped table-hover">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Postal Code</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var client in Model.Clients)
-        {
-            <tr>
-                <td>@client.FullName</td>
-                <td>@client.Email</td>
-                <td>@client.Phone</td>
-                <td>@client.PostalCode</td>
-                <td>
-                    <a class="btn btn-sm btn-outline-primary"
-                       asp-controller="Clients"
-                       asp-action="Details"
-                       asp-route-id="@client.Id">Details</a>
-                    <a class="btn btn-sm btn-outline-secondary"
-                       asp-controller="Clients"
-                       asp-action="Edit"
-                       asp-route-id="@client.Id">Edit</a>
-                    <a class="btn btn-sm btn-outline-danger"
-                       asp-controller="Clients"
-                       asp-action="Delete"
-                       asp-route-id="@client.Id">Delete</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-@if (Model.TotalPages > 1)
+@if (Model.Clients.Count == 0)
 {
-    <nav>
-        <ul class="pagination">
-            <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
-                <a class="page-link"
-                   asp-action="Index"
-                   asp-route-search="@Model.Search"
-                   asp-route-postalCodeId="@Model.PostalCodeId"
-                   asp-route-sortBy="@Model.SortBy"
-                   asp-route-sortDir="@Model.SortDir"
-                   asp-route-page="@(Model.Page - 1)">Previous</a>
-            </li>
-            @for (var i = 1; i <= Model.TotalPages; i++)
-            {
-                <li class="page-item @(i == Model.Page ? "active" : "")">
+    <div class="alert alert-info">
+        You don't have any clients yet.
+        <a asp-controller="Clients"
+           asp-action="Create">Create your first client</a>.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Postal Code</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var client in Model.Clients)
+                {
+                    <tr>
+                        <td>@client.FullName</td>
+                        <td>@client.Email</td>
+                        <td>@client.Phone</td>
+                        <td>@client.PostalCode</td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary"
+                               asp-controller="Clients"
+                               asp-action="Details"
+                               asp-route-id="@client.Id">Details</a>
+                            <a class="btn btn-sm btn-outline-secondary"
+                               asp-controller="Clients"
+                               asp-action="Edit"
+                               asp-route-id="@client.Id">Edit</a>
+                            <a class="btn btn-sm btn-outline-danger"
+                               asp-controller="Clients"
+                               asp-action="Delete"
+                               asp-route-id="@client.Id">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav>
+            <ul class="pagination">
+                <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
                     <a class="page-link"
                        asp-action="Index"
                        asp-route-search="@Model.Search"
                        asp-route-postalCodeId="@Model.PostalCodeId"
                        asp-route-sortBy="@Model.SortBy"
                        asp-route-sortDir="@Model.SortDir"
-                       asp-route-page="@i">@i</a>
+                       asp-route-page="@(Model.Page - 1)">Previous</a>
                 </li>
-            }
-            <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
-                <a class="page-link"
-                   asp-action="Index"
-                   asp-route-search="@Model.Search"
-                   asp-route-postalCodeId="@Model.PostalCodeId"
-                   asp-route-sortBy="@Model.SortBy"
-                   asp-route-sortDir="@Model.SortDir"
-                   asp-route-page="@(Model.Page + 1)">Next</a>
-            </li>
-        </ul>
-    </nav>
+                @for (var i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.Page ? "active" : "")">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-search="@Model.Search"
+                           asp-route-postalCodeId="@Model.PostalCodeId"
+                           asp-route-sortBy="@Model.SortBy"
+                           asp-route-sortDir="@Model.SortDir"
+                           asp-route-page="@i">@i</a>
+                    </li>
+                }
+                <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-search="@Model.Search"
+                       asp-route-postalCodeId="@Model.PostalCodeId"
+                       asp-route-sortBy="@Model.SortBy"
+                       asp-route-sortDir="@Model.SortDir"
+                       asp-route-page="@(Model.Page + 1)">Next</a>
+                </li>
+            </ul>
+        </nav>
+    }
 }
