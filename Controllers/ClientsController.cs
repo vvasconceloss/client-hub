@@ -1,4 +1,4 @@
-using ClientHub.Data;
+using System.Security.Claims;
 using ClientHub.Models.Entities;
 using ClientHub.Models.ViewModels;
 using ClientHub.Services;
@@ -18,9 +18,11 @@ namespace ClientHub.Controllers
       _clientService = clientService;
     }
 
+    private Guid CurrentUserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
     public async Task<IActionResult> Index()
     {
-      var clients = await _clientService.GetAllAsync();
+      var clients = await _clientService.GetAllAsync(CurrentUserId);
 
       var model = clients.Select(c => new ClientListItemViewModel
       {
@@ -36,7 +38,7 @@ namespace ClientHub.Controllers
 
     public async Task<IActionResult> Details(int id)
     {
-      var client = await _clientService.GetByIdAsync(id);
+      var client = await _clientService.GetByIdAsync(id, CurrentUserId);
 
       if (client is null)
       {
@@ -84,7 +86,7 @@ namespace ClientHub.Controllers
         Phone = model.Phone,
         Address = model.Address,
         PostalCodeId = model.PostalCodeId!.Value,
-        CreatedByUserId = SeedData.DemoUserId,
+        CreatedByUserId = CurrentUserId,
         CreatedAt = DateTime.UtcNow
       };
 
@@ -95,7 +97,7 @@ namespace ClientHub.Controllers
 
     public async Task<IActionResult> Edit(int id)
     {
-      var client = await _clientService.GetByIdAsync(id);
+      var client = await _clientService.GetByIdAsync(id, CurrentUserId);
 
       if (client is null)
       {
@@ -129,7 +131,7 @@ namespace ClientHub.Controllers
         return View(model);
       }
 
-      var client = await _clientService.GetByIdAsync(id);
+      var client = await _clientService.GetByIdAsync(id, CurrentUserId);
 
       if (client is null)
       {
@@ -151,7 +153,7 @@ namespace ClientHub.Controllers
 
     public async Task<IActionResult> Delete([FromRoute] int id)
     {
-      var client = await _clientService.GetByIdAsync(id);
+      var client = await _clientService.GetByIdAsync(id, CurrentUserId);
 
       if (client is null)
       {
@@ -178,7 +180,7 @@ namespace ClientHub.Controllers
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed([FromRoute] int id)
     {
-      if (!await _clientService.DeleteAsync(id))
+      if (!await _clientService.DeleteAsync(id, CurrentUserId))
       {
         return NotFound();
       }
