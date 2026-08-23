@@ -1,0 +1,20 @@
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
+
+namespace ClientHub.Models.ViewModels
+{
+  public class LoginViewModel
+  {
+    [Required(ErrorMessage = "The email is required.")]
+    [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+    public string Email { get; set; } = "";
+
+    [Required(ErrorMessage = "The password is required.")]
+    public string Password { get; set; } = "";
+
+    public bool RememberMe { get; set; }
+
+    [HiddenInput]
+    public string? ReturnUrl { get; set; }
+  }
+}
