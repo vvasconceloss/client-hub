@@ -7,7 +7,7 @@ namespace ClientHub.Services
 {
   public class ClientService(ApplicationDbContext db) : IClientService
   {
-    public async Task<PagedResult<Client>> GetAllAsync(Guid userId, string? search, int page, int pageSize)
+    public async Task<PagedResult<Client>> GetAllAsync(Guid userId, string? search, int? postalCodeId, string? sortBy, string? sortDir, int page, int pageSize)
     {
       IQueryable<Client> query = db.Clients
         .Include(c => c.PostalCode)
@@ -21,11 +21,16 @@ namespace ClientHub.Services
           c.Email.Contains(search));
       }
 
+      if (postalCodeId.HasValue)
+      {
+        query = query.Where(c => c.PostalCodeId == postalCodeId.Value);
+      }
+
+      query = ApplySorting(query, sortBy, sortDir);
+
       int totalItems = await query.CountAsync();
 
       var items = await query
-        .OrderBy(c => c.LastName)
-        .ThenBy(c => c.FirstName)
         .Skip((page - 1) * pageSize)
         .Take(pageSize)
         .ToListAsync();
@@ -36,6 +41,20 @@ namespace ClientHub.Services
         Page = page,
         PageSize = pageSize,
         TotalItems = totalItems
+      };
+    }
+
+    private static IQueryable<Client> ApplySorting(IQueryable<Client> query, string? sortBy, string? sortDir)
+    {
+      bool descending = string.Equals(sortDir, "desc", StringComparison.OrdinalIgnoreCase);
+
+      return sortBy switch
+      {
+        "email" => descending ? query.OrderByDescending(c => c.Email) : query.OrderBy(c => c.Email),
+        "createdAt" => descending ? query.OrderByDescending(c => c.CreatedAt) : query.OrderBy(c => c.CreatedAt),
+        _ => descending
+          ? query.OrderByDescending(c => c.LastName).ThenByDescending(c => c.FirstName)
+          : query.OrderBy(c => c.LastName).ThenBy(c => c.FirstName)
       };
     }
 
