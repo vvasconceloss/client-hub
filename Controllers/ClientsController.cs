@@ -20,9 +20,11 @@ namespace ClientHub.Controllers
 
     private Guid CurrentUserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string? search)
     {
-      var clients = await _clientService.GetAllAsync(CurrentUserId);
+      var clients = await _clientService.GetAllAsync(CurrentUserId, search);
+
+      ViewData["Search"] = search;
 
       var model = clients.Select(c => new ClientListItemViewModel
       {
