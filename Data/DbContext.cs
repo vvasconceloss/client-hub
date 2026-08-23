@@ -5,9 +5,9 @@ namespace ClientHub.Data
 {
   public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
   {
-    required public DbSet<User> Users { get; set; }
-    required public DbSet<Client> Clients { get; set; }
-    required public DbSet<PostalCode> PostalCodes { get; set; }
+    public DbSet<User> Users { get; set; } = null!;
+    public DbSet<Client> Clients { get; set; } = null!;
+    public DbSet<PostalCode> PostalCodes { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
