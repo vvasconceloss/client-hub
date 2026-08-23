@@ -1,4 +1,4 @@
-using System.Security.Claims;
+using ClientHub.Extensions;
 using ClientHub.Models.Entities;
 using ClientHub.Models.ViewModels;
 using ClientHub.Services;
@@ -18,7 +18,7 @@ namespace ClientHub.Controllers
       _clientService = clientService;
     }
 
-    private Guid CurrentUserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    private Guid CurrentUserId => User.GetUserId();
 
     private const int PageSize = 5;
 
@@ -61,19 +61,7 @@ namespace ClientHub.Controllers
         return NotFound();
       }
 
-      var model = new ClientDetailsViewModel
-      {
-        Id = client.Id,
-        FullName = client.FirstName + " " + client.LastName,
-        Email = client.Email,
-        Phone = client.Phone,
-        Address = client.Address,
-        PostalCode = client.PostalCode.Code,
-        City = client.PostalCode.City,
-        CreatedAt = client.CreatedAt
-      };
-
-      return View(model);
+      return View(ToDetailsViewModel(client));
     }
 
     public async Task<IActionResult> Create()
@@ -176,19 +164,7 @@ namespace ClientHub.Controllers
         return NotFound();
       }
 
-      var model = new ClientDetailsViewModel
-      {
-        Id = client.Id,
-        FullName = client.FirstName + " " + client.LastName,
-        Email = client.Email,
-        Phone = client.Phone,
-        Address = client.Address,
-        PostalCode = client.PostalCode.Code,
-        City = client.PostalCode.City,
-        CreatedAt = client.CreatedAt
-      };
-
-      return View(model);
+      return View(ToDetailsViewModel(client));
     }
 
     [HttpPost]
@@ -215,6 +191,21 @@ namespace ClientHub.Controllers
           Text = p.Code + " - " + p.City
         })
         .ToList();
+    }
+
+    private static ClientDetailsViewModel ToDetailsViewModel(Client client)
+    {
+      return new ClientDetailsViewModel
+      {
+        Id = client.Id,
+        FullName = client.FirstName + " " + client.LastName,
+        Email = client.Email,
+        Phone = client.Phone,
+        Address = client.Address,
+        PostalCode = client.PostalCode.Code,
+        City = client.PostalCode.City,
+        CreatedAt = client.CreatedAt
+      };
     }
   }
 }

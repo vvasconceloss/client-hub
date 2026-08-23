@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using System.Security.Claims;
+using ClientHub.Extensions;
 using ClientHub.Models;
 using ClientHub.Models.ViewModels;
 using ClientHub.Services;
@@ -20,15 +20,9 @@ namespace ClientHub.Controllers
     [Authorize]
     public async Task<IActionResult> Index()
     {
-      var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-      var model = await _clientService.GetDashboardAsync(userId);
+      var model = await _clientService.GetDashboardAsync(User.GetUserId());
 
       return View(model);
-    }
-
-    public IActionResult Privacy()
-    {
-      return View();
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
