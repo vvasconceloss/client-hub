@@ -6,11 +6,21 @@ namespace ClientHub.Services
 {
   public class ClientService(ApplicationDbContext db) : IClientService
   {
-    public async Task<List<Client>> GetAllAsync(Guid userId)
+    public async Task<List<Client>> GetAllAsync(Guid userId, string? search)
     {
-      return await db.Clients
+      IQueryable<Client> query = db.Clients
         .Include(c => c.PostalCode)
-        .Where(c => c.CreatedByUserId == userId)
+        .Where(c => c.CreatedByUserId == userId);
+
+      if (!string.IsNullOrWhiteSpace(search))
+      {
+        query = query.Where(c =>
+          c.FirstName.Contains(search) ||
+          c.LastName.Contains(search) ||
+          c.Email.Contains(search));
+      }
+
+      return await query
         .OrderBy(c => c.LastName)
         .ThenBy(c => c.FirstName)
         .ToListAsync();
