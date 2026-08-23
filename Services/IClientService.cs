@@ -1,10 +1,11 @@
 using ClientHub.Models.Entities;
+using ClientHub.Models.ViewModels;
 
 namespace ClientHub.Services
 {
   public interface IClientService
   {
-    Task<List<Client>> GetAllAsync(Guid userId, string? search);
+    Task<PagedResult<Client>> GetAllAsync(Guid userId, string? search, int page, int pageSize);
     Task<Client?> GetByIdAsync(int id, Guid userId);
     Task<Client> CreateAsync(Client client);
     Task UpdateAsync(Client client);

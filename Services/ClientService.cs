@@ -1,12 +1,13 @@
 using ClientHub.Data;
 using ClientHub.Models.Entities;
+using ClientHub.Models.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClientHub.Services
 {
   public class ClientService(ApplicationDbContext db) : IClientService
   {
-    public async Task<List<Client>> GetAllAsync(Guid userId, string? search)
+    public async Task<PagedResult<Client>> GetAllAsync(Guid userId, string? search, int page, int pageSize)
     {
       IQueryable<Client> query = db.Clients
         .Include(c => c.PostalCode)
@@ -20,10 +21,22 @@ namespace ClientHub.Services
           c.Email.Contains(search));
       }
 
-      return await query
+      int totalItems = await query.CountAsync();
+
+      var items = await query
         .OrderBy(c => c.LastName)
         .ThenBy(c => c.FirstName)
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
         .ToListAsync();
+
+      return new PagedResult<Client>
+      {
+        Items = items,
+        Page = page,
+        PageSize = pageSize,
+        TotalItems = totalItems
+      };
     }
 
     public async Task<Client?> GetByIdAsync(int id, Guid userId)
