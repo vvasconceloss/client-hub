@@ -100,5 +100,37 @@ namespace ClientHub.Services
         .OrderBy(p => p.City)
         .ToListAsync();
     }
+
+    public async Task<DashboardViewModel> GetDashboardAsync(Guid userId)
+    {
+      var monthStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+
+      var totalClients = await db.Clients.CountAsync();
+      var clientsThisMonth = await db.Clients.CountAsync(c => c.CreatedAt >= monthStart);
+      var myClients = await db.Clients.CountAsync(c => c.CreatedByUserId == userId);
+
+      var recentClients = await db.Clients
+        .Include(c => c.PostalCode)
+        .Where(c => c.CreatedByUserId == userId)
+        .OrderByDescending(c => c.CreatedAt)
+        .Take(5)
+        .Select(c => new ClientListItemViewModel
+        {
+          Id = c.Id,
+          FullName = c.FirstName + " " + c.LastName,
+          Email = c.Email,
+          Phone = c.Phone,
+          PostalCode = c.PostalCode.Code
+        })
+        .ToListAsync();
+
+      return new DashboardViewModel
+      {
+        TotalClients = totalClients,
+        ClientsThisMonth = clientsThisMonth,
+        MyClients = myClients,
+        RecentClients = recentClients
+      };
+    }
   }
 }

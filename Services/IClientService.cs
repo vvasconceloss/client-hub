@@ -11,5 +11,6 @@ namespace ClientHub.Services
     Task UpdateAsync(Client client);
     Task<bool> DeleteAsync(int id, Guid userId);
     Task<List<PostalCode>> GetAllPostalCodesAsync();
+    Task<DashboardViewModel> GetDashboardAsync(Guid userId);
   }
 }
