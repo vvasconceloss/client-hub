@@ -11,7 +11,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10-512bd4.svg)](https://dotnet.microsoft.com/)
 [![C#](https://img.shields.io/badge/C%23-13-239120.svg)](https://learn.microsoft.com/en-us/dotnet/csharp/)
 [![MySQL](https://img.shields.io/badge/MySQL-8-4479A1.svg)](https://www.mysql.com/)
-[![Status](https://img.shields.io/badge/status-MVP-512bd4.svg)](docs/MVP.md)
+[![Status](https://img.shields.io/badge/status-MVP-512bd4.svg)]
 
 </p>
 </div>
@@ -170,28 +170,6 @@ dotnet test
 ## Screenshots
 
 > _Coming soon — dashboard, client list and form._
-
-## What I Learned
-
-This rebuild was a chance to fix, deliberately, the flaws of the 2025 version:
-
-- **Password hashing.** V1 used a custom `PasswordService` (custom SHA256/HMAC). V2 uses ASP.NET
-  Core's `PasswordHasher<TUser>` (PBKDF2, salted) — never roll your own password hashing.
-- **Overposting.** V1 bound the `Client` entity directly in forms. V2 uses dedicated ViewModels
-  that contain only the editable fields, plus `[FromRoute]` so the id can only come from the URL.
-- **Per-user isolation.** V1 had no ownership. V2 filters every query by `CreatedByUserId` inside
-  the service — "not showing the button" is not security; filtering on the server is.
-- **Pagination in SQL.** V1 paginated in memory. V2 applies `CountAsync` + `Skip/Take` over an
-  `IQueryable`, so the database does the work (proven via the EF Core query log).
-- **Seed data as migrations.** V2 seeds via `HasData`, so a fresh database already has data after
-  `database update` — no manual insertion.
-
-## Future Improvements
-
-- Deployment (Docker image, hosting)
-- Dashboard charts
-- Excel/PDF export
-- Photo upload
 
 ## License
 
