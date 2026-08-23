@@ -13,10 +13,47 @@
 </p>
 
 <form method="get" asp-controller="Clients" asp-action="Index">
-    <div class="input-group mb-3 w-50">
-        <input type="text" name="search" value="@Model.Search" class="form-control"
-               placeholder="Search by name or email..." />
-        <button type="submit" class="btn btn-outline-secondary">Search</button>
+    <div class="row g-2 mb-3">
+        <div class="col-auto">
+            <input type="text" name="search" value="@Model.Search" class="form-control"
+                   placeholder="Search by name or email..." />
+        </div>
+        <div class="col-auto">
+            <select name="postalCodeId" class="form-select">
+                <option value="">All postal codes</option>
+                @foreach (var postalCode in Model.PostalCodes)
+                {
+                    <option value="@postalCode.Value"
+                            selected="@(Model.PostalCodeId?.ToString() == postalCode.Value ? "selected" : null)">
+                        @postalCode.Text
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="col-auto">
+            <select name="sortBy" class="form-select">
+                <option value="name"
+                        selected="@(Model.SortBy is null or "name" ? "selected" : null)">Sort by Name</option>
+                <option value="email"
+                        selected="@(Model.SortBy == "email" ? "selected" : null)">Sort by Email</option>
+                <option value="createdAt"
+                        selected="@(Model.SortBy == "createdAt" ? "selected" : null)">Sort by Created Date</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <select name="sortDir" class="form-select">
+                <option value="asc"
+                        selected="@(Model.SortDir != "desc" ? "selected" : null)">Ascending</option>
+                <option value="desc"
+                        selected="@(Model.SortDir == "desc" ? "selected" : null)">Descending</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-outline-secondary">Apply</button>
+            <a class="btn btn-link"
+               asp-controller="Clients"
+               asp-action="Index">Clear</a>
+        </div>
     </div>
 </form>
 
@@ -65,6 +102,9 @@
                 <a class="page-link"
                    asp-action="Index"
                    asp-route-search="@Model.Search"
+                   asp-route-postalCodeId="@Model.PostalCodeId"
+                   asp-route-sortBy="@Model.SortBy"
+                   asp-route-sortDir="@Model.SortDir"
                    asp-route-page="@(Model.Page - 1)">Previous</a>
             </li>
             @for (var i = 1; i <= Model.TotalPages; i++)
@@ -73,6 +113,9 @@
                     <a class="page-link"
                        asp-action="Index"
                        asp-route-search="@Model.Search"
+                       asp-route-postalCodeId="@Model.PostalCodeId"
+                       asp-route-sortBy="@Model.SortBy"
+                       asp-route-sortDir="@Model.SortDir"
                        asp-route-page="@i">@i</a>
                 </li>
             }
@@ -80,6 +123,9 @@
                 <a class="page-link"
                    asp-action="Index"
                    asp-route-search="@Model.Search"
+                   asp-route-postalCodeId="@Model.PostalCodeId"
+                   asp-route-sortBy="@Model.SortBy"
+                   asp-route-sortDir="@Model.SortDir"
                    asp-route-page="@(Model.Page + 1)">Next</a>
             </li>
         </ul>
