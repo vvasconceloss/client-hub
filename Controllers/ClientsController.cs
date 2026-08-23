@@ -20,20 +20,30 @@ namespace ClientHub.Controllers
 
     private Guid CurrentUserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-    public async Task<IActionResult> Index(string? search)
+    private const int PageSize = 5;
+
+    public async Task<IActionResult> Index(string? search, int page = 1)
     {
-      var clients = await _clientService.GetAllAsync(CurrentUserId, search);
+      page = Math.Max(page, 1);
 
-      ViewData["Search"] = search;
+      var result = await _clientService.GetAllAsync(CurrentUserId, search, page, PageSize);
 
-      var model = clients.Select(c => new ClientListItemViewModel
+      var model = new ClientIndexViewModel
       {
-        Id = c.Id,
-        FullName = c.FirstName + " " + c.LastName,
-        Email = c.Email,
-        Phone = c.Phone,
-        PostalCode = c.PostalCode.Code
-      }).ToList();
+        Clients = result.Items.Select(c => new ClientListItemViewModel
+        {
+          Id = c.Id,
+          FullName = c.FirstName + " " + c.LastName,
+          Email = c.Email,
+          Phone = c.Phone,
+          PostalCode = c.PostalCode.Code
+        }).ToList(),
+        Search = search,
+        Page = result.Page,
+        TotalPages = result.TotalPages,
+        HasPreviousPage = result.HasPreviousPage,
+        HasNextPage = result.HasNextPage
+      };
 
       return View(model);
     }
