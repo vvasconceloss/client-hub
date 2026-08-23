@@ -39,6 +39,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseStatusCodePagesWithReExecute("/Home/Status/{0}");
 
 app.UseAuthentication();
 app.UseAuthorization();
