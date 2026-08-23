@@ -2,11 +2,13 @@ using ClientHub.Data;
 using ClientHub.Models.Entities;
 using ClientHub.Models.ViewModels;
 using ClientHub.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace ClientHub.Controllers
 {
+  [Authorize]
   public class ClientsController : Controller
   {
     private readonly IClientService _clientService;
