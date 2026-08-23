@@ -6,20 +6,21 @@ namespace ClientHub.Services
 {
   public class ClientService(ApplicationDbContext db) : IClientService
   {
-    public async Task<List<Client>> GetAllAsync()
+    public async Task<List<Client>> GetAllAsync(Guid userId)
     {
       return await db.Clients
         .Include(c => c.PostalCode)
+        .Where(c => c.CreatedByUserId == userId)
         .OrderBy(c => c.LastName)
         .ThenBy(c => c.FirstName)
         .ToListAsync();
     }
 
-    public async Task<Client?> GetByIdAsync(int id)
+    public async Task<Client?> GetByIdAsync(int id, Guid userId)
     {
       return await db.Clients
         .Include(c => c.PostalCode)
-        .FirstOrDefaultAsync(c => c.Id == id);
+        .FirstOrDefaultAsync(c => c.Id == id && c.CreatedByUserId == userId);
     }
 
     public async Task<Client> CreateAsync(Client client)
@@ -35,9 +36,10 @@ namespace ClientHub.Services
       await db.SaveChangesAsync();
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id, Guid userId)
     {
-      var client = await db.Clients.FindAsync(id);
+      var client = await db.Clients
+        .FirstOrDefaultAsync(c => c.Id == id && c.CreatedByUserId == userId);
 
       if (client is null)
       {
