@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClientHub.Services
 {
-  public class AuthService(ApplicationDbContext db) : IAuthService
+  public class AuthService(ApplicationDbContext db, ILogger<AuthService> logger) : IAuthService
   {
     private readonly PasswordHasher<User> _passwordHasher = new();
 
@@ -25,7 +25,18 @@ namespace ClientHub.Services
       };
 
       db.Users.Add(user);
-      await db.SaveChangesAsync();
+
+      try
+      {
+        await db.SaveChangesAsync();
+      }
+      catch (Exception ex)
+      {
+        logger.LogError(ex, "Failed to register user {Email}.", email);
+        throw;
+      }
+
+      logger.LogInformation("Registered user {UserId}.", user.Id);
 
       return user;
     }

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClientHub.Services
 {
-  public class ClientService(ApplicationDbContext db) : IClientService
+  public class ClientService(ApplicationDbContext db, ILogger<ClientService> logger) : IClientService
   {
     public async Task<PagedResult<Client>> GetAllAsync(Guid userId, string? search, int? postalCodeId, string? sortBy, string? sortDir, int page, int pageSize)
     {
@@ -68,14 +68,15 @@ namespace ClientHub.Services
     public async Task<Client> CreateAsync(Client client)
     {
       db.Clients.Add(client);
-      await db.SaveChangesAsync();
+      await SaveChangesAsync("create a client");
+      logger.LogInformation("Created client {ClientId}.", client.Id);
 
       return client;
     }
 
     public async Task UpdateAsync(Client client)
     {
-      await db.SaveChangesAsync();
+      await SaveChangesAsync("update a client");
     }
 
     public async Task<bool> DeleteAsync(int id, Guid userId)
@@ -89,9 +90,23 @@ namespace ClientHub.Services
       }
 
       db.Clients.Remove(client);
-      await db.SaveChangesAsync();
+      await SaveChangesAsync("delete a client");
+      logger.LogInformation("Deleted client {ClientId}.", client.Id);
 
       return true;
+    }
+
+    private async Task SaveChangesAsync(string operation)
+    {
+      try
+      {
+        await db.SaveChangesAsync();
+      }
+      catch (Exception ex)
+      {
+        logger.LogError(ex, "Failed to {Operation}.", operation);
+        throw;
+      }
     }
 
     public async Task<List<PostalCode>> GetAllPostalCodesAsync()
