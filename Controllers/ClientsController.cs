@@ -22,11 +22,11 @@ namespace ClientHub.Controllers
 
     private const int PageSize = 5;
 
-    public async Task<IActionResult> Index(string? search, int page = 1)
+    public async Task<IActionResult> Index(string? search, int? postalCodeId, string? sortBy, string? sortDir, int page = 1)
     {
       page = Math.Max(page, 1);
 
-      var result = await _clientService.GetAllAsync(CurrentUserId, search, page, PageSize);
+      var result = await _clientService.GetAllAsync(CurrentUserId, search, postalCodeId, sortBy, sortDir, page, PageSize);
 
       var model = new ClientIndexViewModel
       {
@@ -39,6 +39,10 @@ namespace ClientHub.Controllers
           PostalCode = c.PostalCode.Code
         }).ToList(),
         Search = search,
+        PostalCodeId = postalCodeId,
+        SortBy = sortBy,
+        SortDir = sortDir,
+        PostalCodes = await GetPostalCodeOptions(),
         Page = result.Page,
         TotalPages = result.TotalPages,
         HasPreviousPage = result.HasPreviousPage,
