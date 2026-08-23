@@ -1,0 +1,22 @@
+@model int
+
+@{
+    ViewData["Title"] = "Error";
+}
+
+<h1 class="text-danger">@(Model == 404 ? "Page Not Found" : "Error")</h1>
+
+@if (Model == 404)
+{
+    <p>The page you are looking for does not exist or may have been moved.</p>
+}
+else
+{
+    <p>An unexpected error occurred while processing your request.</p>
+}
+
+<p>
+    <a class="btn btn-primary"
+       asp-controller="Home"
+       asp-action="Index">Go to Dashboard</a>
+</p>
